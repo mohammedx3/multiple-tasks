@@ -1,0 +1,8 @@
+resource_group_name     = "${{ values.resource_group_name }}"
+resource_group_location = "${{ values.resource_group_location }}"
+storage_account_name    = "${{ values.storage_account_name }}"
+storage_access_tier     = "${{ values.storage_access_tier }}"
+storage_account_tier    = "${{ values.storage_account_tier }}"
+storage_replication_type = "${{ values.storage_replication_type }}"
+container_name          = "${{ values.container_name }}"
+container_access_type   = "${{ values.container_access_type }}"

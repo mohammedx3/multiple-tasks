@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "shop-backend.fullname" . }}
+  labels:
+    {{- include "shop-backend.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "shop-backend.name" . }}
+  template:
+    metadata:
+      labels:
+        {{- include "shop-backend.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ include "shop-backend.name" . }}
+          image: "{{ .Values.deployment.image.repository }}:{{ .Values.deployment.image.tag }}"
+          imagePullPolicy: "{{ .Values.deployment.image.imagePullPolicy }}"
+          ports:
+            - containerPort: {{ .Values.deployment.port }}
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.deployment.livenessProbe.port }}
+            initialDelaySeconds: {{ .Values.deployment.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.deployment.livenessProbe.periodSeconds }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.deployment.readinessProbe.path }}
+              port: {{ .Values.deployment.readinessProbe.port }}
+            initialDelaySeconds: {{ .Values.deployment.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.deployment.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.deployment.readinessProbe.failureThreshold }}

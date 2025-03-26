@@ -1,0 +1,11 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.resource_group_name }}-infrastructure
+  description: Azure Infrastructure for ${{ values.resource_group_name }}
+  annotations:
+    github.com/project-slug: user/azure-terraform-${{ values.resource_group_name }}
+spec:
+  type: infrastructure
+  owner: user:guest
+  lifecycle: production

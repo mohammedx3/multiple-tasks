@@ -1,0 +1,166 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: azure-storage-terraform-template
+  title: Azure Storage Infrastructure
+  description: Provision Azure Resource Group, Storage Account, and Container using Terraform
+  tags:
+    - azure
+    - terraform
+    - infrastructure
+    - storage
+spec:
+  owner: user:guest
+  type: infrastructure
+  parameters:
+    - title: Azure Resource Group Information
+      required:
+        - resource_group_name
+      properties:
+        resource_group_name:
+          title: Resource Group Name
+          type: string
+          description: The name of the Azure Resource Group to be created
+          ui:autofocus: true
+          default: sre-challenge-flaschenpost
+        resource_group_location:
+          title: Resource Group Location
+          type: string
+          description: The Azure region where resources will be provisioned
+          default: westeurope
+          enum:
+            - westeurope
+            - eastus
+            - westus
+            - northeurope
+        resource_group_tag:
+          title: Resource Group Tag
+          type: string
+          description: A key-value pair tag for the resource group
+          default: "department = SRE"
+    
+    - title: Azure Storage Account Configuration
+      required:
+        - storage_account_name
+      properties:
+        storage_account_name:
+          title: Storage Account Name
+          type: string
+          description: The name of the Azure Storage Account to be created (max 24 characters)
+          maxLength: 24
+          default: sretaskforflaschenpost
+        storage_account_resource_group:
+          title: Storage Account Resource Group
+          type: string
+          description: The resource group to associate the storage account with
+          default: sre-challenge-flaschenpost
+        storage_access_tier:
+          title: Storage Access Tier
+          type: string
+          description: The access tier for the storage account
+          default: Hot
+          enum:
+            - Hot
+            - Cool
+        storage_account_tier:
+          title: Storage Account Tier
+          type: string
+          description: The tier of the storage account
+          default: Standard
+          enum:
+            - Standard
+            - Premium
+        storage_replication_type:
+          title: Storage Replication Type
+          type: string
+          description: The replication type for the storage account
+          default: LRS
+          enum:
+            - LRS
+            - GRS
+        storage_account_tag:
+          title: Storage Account Tag
+          type: string
+          description: A key-value pair tag for the storage account
+          default: "department = SRE"
+    
+    - title: Azure Storage Container Configuration
+      required:
+        - container_name
+      properties:
+        container_name:
+          title: Container Name
+          type: string
+          description: The name of the storage container within the storage account
+          default: sre
+        container_access_type:
+          title: Container Type
+          type: string
+          description: The type of the container
+          default: private
+          enum:
+            - private
+            - blob
+            - container
+            
+    - title: GitHub Repository Information
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+        commitMessage:
+          title: Commit Message
+          type: string
+          description: Message for the commit
+          default: "Add Azure Storage Terraform configuration"
+
+  steps:
+    - id: fetch-template
+      name: Fetch Terraform Files
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          resource_group_name: ${{ parameters.resource_group_name }}
+          resource_group_location: ${{ parameters.resource_group_location }}
+          resource_group_tag: ${{ parameters.resource_group_tag }}
+          storage_account_name: ${{ parameters.storage_account_name }}
+          storage_account_resource_group: ${{ parameters.storage_account_resource_group }}
+          sku: ${{ parameters.sku }}
+          storage_access_tier: ${{ parameters.storage_access_tier }}
+          storage_account_tier: ${{ parameters.storage_account_tier }}
+          storage_replication_type: ${{ parameters.storage_replication_type }}
+          storage_account_tag: ${{ parameters.storage_account_tag }}
+          container_name: ${{ parameters.container_name }}
+          container_access_type: ${{ parameters.container_access_type }}
+
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        description: Terraform configuration for Azure Storage infrastructure
+        allowedHosts: ['github.com']
+        repoUrl: ${{ parameters.repoUrl }}
+        token: ${GITHUB_TOKEN}
+        commitMessage: ${{ parameters.commitMessage }}
+        gitAuthorName: Backstage
+        gitAuthorEmail: backstage@example.com
+
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}

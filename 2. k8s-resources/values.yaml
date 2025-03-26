@@ -1,0 +1,30 @@
+nameOverride: ""
+fullnameOverride: ""
+
+deployment:
+  replicaCount: 3
+  port: 80
+
+  image:
+    repository: strm/helloworld-http
+    tag: latest
+    imagePullPolicy: IfNotPresent
+
+  livenessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    port: 80
+
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 1
+    failureThreshold: 2
+    path: "/"
+    port: 80
+
+cronjob:
+  name: sre-job
+  image: busybox
+  schedule: "*/30 * * * *"
+  command: ["/bin/sh", "-c", "echo Hello SRE"]
+  restartPolicy: OnFailure

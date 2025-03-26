@@ -1,0 +1,6 @@
+apiVersion: v2
+name: shop-backend
+description: A Helm chart to deploy the shop backend API and a CronJob.
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
